@@ -25,7 +25,7 @@ class FileStorage:
     __objects = {} 
 
     def all(self, cls=None):
-        """Returns a dictionary of models currently in storage"""
+        """Returns the list of objects of one type of class"""
         if cls is not None:
             new_dict = {}
             for key, value in self.__objects.items():
