@@ -1,29 +1,24 @@
 #!/usr/bin/env bash
-# Script sets up my web servers 117692-web-01 and 117692-web-02 for deployment of web_static
-# Install Nginx if not already installed
-if ! command -v nginx &> /dev/null
-then
-    echo "Nginx is not installed. Installing now..."
+
+# Install Nginx if it's not already installed
+if ! [ -x "$(command -v nginx)" ]; then
     sudo apt-get update
-    sudo apt-get -y install nginx
+    sudo apt-get install nginx -y
 fi
 
-# Create web server directory structure
-sudo mkdir -p /data/web_static/{releases,test,shared}
-
-# Create fake HTML file for testing Nginx configuration
-echo "<html><body>Hello World!</body></html>" | sudo tee /data/web_static/releases/test/index.html
-
-# Create symbolic link to test release
-sudo ln -sf /data/web_static/releases/test /data/web_static/current
-
-# Set ownership and permissions for web server directory
+# Create the necessary directories if they don't exist
+sudo mkdir -p /data/web_static/releases/test
+sudo mkdir -p /data/web_static/shared
 sudo chown -R ubuntu:ubuntu /data/
-sudo chmod -R 755 /data/
 
-# Configure Nginx to serve content from web_static directory
-sudo sed -i '/server_name _;/a\\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default
+# Create a fake HTML file for testing purposes
+echo "ALX School" | sudo tee /data/web_static/releases/test/index.html
 
-# Restart Nginx to apply changes
+# Create a symbolic link from /data/web_static/current to /data/web_static/releases/test
+sudo rm -rf /data/web_static/current
+sudo ln -s /data/web_static/releases/test /data/web_static/current
+
+# Update Nginx configuration to serve content from /data/web_static/current to /hbnb_static
+sudo sed -i '/^}/i \\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-enabled/default
 sudo service nginx restart
 
