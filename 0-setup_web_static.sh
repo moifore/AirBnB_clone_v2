@@ -1,24 +1,45 @@
 #!/usr/bin/env bash
+# sets up my web servers for the deployment of web_static
 
-# Install Nginx if it's not already installed
-if ! [ -x "$(command -v nginx)" ]; then
-    sudo apt-get update
-    sudo apt-get install nginx -y
+# Define color variables
+GREEN='\033[1;32m'
+NC='\033[0m' # No Color
+
+# Update packages and install nginx
+sudo apt-get update -y
+sudo apt-get install -y nginx
+
+# Configure firewall to allow incoming HTTP connections
+sudo ufw allow 'Nginx HTTP'
+
+# Create necessary directories
+sudo mkdir -p /data/web_static/releases/test /data/web_static/shared
+
+# Create test HTML file with welcome message
+echo "<h1>Holberton School</h1>" | sudo tee /data/web_static/releases/test/index.html >/dev/null
+
+# Remove existing symlink if it exists
+if [ -L /data/web_static/current ]; then
+    sudo rm /data/web_static/current
 fi
 
-# Create the necessary directories if they don't exist
-sudo mkdir -p /data/web_static/releases/test
-sudo mkdir -p /data/web_static/shared
-sudo chown -R ubuntu:ubuntu /data/
-
-# Create a fake HTML file for testing purposes
-echo "ALX School" | sudo tee /data/web_static/releases/test/index.html
-
-# Create a symbolic link from /data/web_static/current to /data/web_static/releases/test
-sudo rm -rf /data/web_static/current
+# Create symlink to latest version of web_static
 sudo ln -s /data/web_static/releases/test /data/web_static/current
+sudo chown -R ubuntu:ubuntu /data/web_static/
 
-# Update Nginx configuration to serve content from /data/web_static/current to /hbnb_static
-sudo sed -i '/^}/i \\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-enabled/default
+# Add Nginx configuration for serving static files
+sudo tee -a /etc/nginx/sites-available/default >/dev/null <<EOF
+location /hbnb_static/ {
+    alias /data/web_static/current/;
+}
+EOF
+
+# Enable Nginx configuration
+sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+
+# Restart nginx to apply changes
 sudo service nginx restart
+
+# Print success message
+echo -e "${GREEN}Web server setup complete!${NC}"
 
