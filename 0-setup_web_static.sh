@@ -23,16 +23,12 @@ if [ -L /data/web_static/current ]; then
     sudo rm /data/web_static/current
 fi
 
-# Create symlink to latest version of web_static
+# Create symbolic link to latest version of web_static
 sudo ln -s /data/web_static/releases/test /data/web_static/current
 sudo chown -R ubuntu:ubuntu /data/web_static/
 
 # Add Nginx configuration for serving static files
-sudo tee -a /etc/nginx/sites-available/default >/dev/null <<EOF
-location /hbnb_static/ {
-    alias /data/web_static/current/;
-}
-EOF
+sudo sed -i '38i\\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default
 
 # Enable Nginx configuration
 sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
