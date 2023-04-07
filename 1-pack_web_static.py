@@ -17,4 +17,3 @@ def do_pack():
     except:
         # return None if the archive has not been correctly generated
         return None
-
