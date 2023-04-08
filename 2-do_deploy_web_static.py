@@ -11,6 +11,7 @@ env.hosts = ['34.229.72.112', '100.27.3.239']
 env.user = 'ubuntu'
 env.key_filename = '/root/.ssh/id_rsa.pub'
 
+
 def do_deploy(archive_path):
     """Distributes an archive to web servers using Fabric."""
 
@@ -22,32 +23,23 @@ def do_deploy(archive_path):
     # Define variables
     archive_name = os.path.basename(archive_path)
     archive_dir = os.path.splitext(archive_name)[0]
+    folder_path = "/data/web_static/releases/"
 
     try:
-        # Upload archive to web servers
-        put(archive_path, '/tmp/')
-
-        # Create directory to uncompress archive
-        run(f'mkdir -p /data/web_static/releases/{archive_dir}/')
-
-        # Uncompress archive to directory
-        run(f'tar -xzf /tmp/{archive_name} \
-             -C /data/web_static/releases/{archive_dir}/')
-
-        # Remove archive from web servers
-        run(f'rm /tmp/{archive_name}')
-
-        # Delete symbolic link to current code
-        run('rm -f /data/web_static/current')
-
-        # Create new symbolic link to new version of code
-        run(f'ln -s /data/web_static/releases/{archive_dir}/ \
-             /data/web_static/current')
+        put(archive_path, "/tmp/")
+        run("mkdir -p {}{}".format(folder_path, archive_dir))
+        run("tar -xzf /tmp/{} -C {}".format(archive_name, folder_path))
+        run("rm -rf /tmp/{}".format(archive_name))
+        run("mv {}web_static/* {}".format(folder_path, folder_path))
+        run("rm -rf {}web_static".format(folder_path))
+        run("rm -rf /data/web_static/current")
+        run("ln -s {} /data/web_static/current".format(folder_path))
+        print('New version deployed!')
+        success = True
 
         print(f"New version of code successfully deployed to web servers.")
-        return True
+        return success
 
     except Exception as e:
         print(f"Error: {e}")
         return False
-
