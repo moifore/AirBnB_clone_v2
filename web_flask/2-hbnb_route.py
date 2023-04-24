@@ -20,7 +20,8 @@ def hbnb_route():
 	return "HBNB!"
 
 @app.route('/c/<text>', strict_slashes=False)
-def c(text):
+def c_isFun(text):
+	"""Prints the letter "C" follow by <text> """
 	return "C {}".format(text.replace('_', ' '))
 
 if __name__ == '__main__':
