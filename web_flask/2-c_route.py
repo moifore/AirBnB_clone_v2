@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#/usr/bin/python3
 """ Script that starts a Flask web application
 at 0.0.0.0:5000
 
